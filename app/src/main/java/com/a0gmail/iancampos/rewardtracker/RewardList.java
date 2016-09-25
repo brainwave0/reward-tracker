@@ -3,32 +3,32 @@ package com.a0gmail.iancampos.rewardtracker;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import org.joda.time.DateTime;
-import org.joda.time.Period;
 
 
 class RewardList {
     private HashMap<String, Reward> rewardsMap = new HashMap<>();
     ArrayList<Reward> rewardsList = new ArrayList<>();
-    private float maxPointsPerDay = 0.0f;
-    private int todaysEarnings = 0;
+    private float cumulativePointsEarned = 0.0f;
     float points = 0.0f;
     private Context context;
-    private DateTime dayStart;
+    private DateTime startDateTime;
 
     public RewardList(Context newContext) {
         context = newContext;
-        dayStart = DateTime.now();
+        startDateTime = DateTime.now();
     }
 
     public float price(String rewardName) {
         try {
-            return maxPointsPerDay / rewardsList.size() / rewardsMap.get(rewardName).dailyLimit;
+            return avgPointsPerDay() / rewardsList.size() / rewardsMap.get(rewardName).dailyLimit;
         }
         catch (NullPointerException e) {
             return 0;
@@ -52,27 +52,19 @@ class RewardList {
 
     public void addPoint() {
         points++;
-        Period oneDay = new Period().withDays(1);
-        if (dayStart.plus(oneDay).isBeforeNow()) {
-            todaysEarnings = 0;
-            dayStart = dayStart.plus(oneDay);
-        }
-        todaysEarnings++;
-        setMaxPointsPerDay(todaysEarnings);
+        cumulativePointsEarned++;
     }
 
-    private void setMaxPointsPerDay(int currentPoints) {
-        if (currentPoints > maxPointsPerDay) {
-            maxPointsPerDay = currentPoints;
-        }
+    private float avgPointsPerDay() {
+        int daysSinceStart = Days.daysBetween(startDateTime, DateTime.now()).getDays();
+        return cumulativePointsEarned / daysSinceStart;
     }
 
     public void save() {
         SharedPreferences sharePrefs = context.getSharedPreferences("rewardListSaveData", Context.MODE_PRIVATE);
         SharedPreferences.Editor sharePrefEdit = sharePrefs.edit();
 
-        sharePrefEdit.putFloat("maxPointsPerDay", maxPointsPerDay);
-        sharePrefEdit.putInt("todaysEarnings", todaysEarnings);
+        sharePrefEdit.putFloat("cumulativePointsEarned", cumulativePointsEarned);
         sharePrefEdit.putFloat("points", points);
 
         String[] setValues = new String[rewardsList.size()];
@@ -91,9 +83,8 @@ class RewardList {
 
     public void load() {
         SharedPreferences sharePrefs = context.getSharedPreferences("rewardListSaveData", Context.MODE_PRIVATE);
-        maxPointsPerDay = sharePrefs.getFloat("maxPointsPerDay", 0.0f);
 
-        todaysEarnings = sharePrefs.getInt("todaysEarnings", 0);
+        cumulativePointsEarned = sharePrefs.getInt("cumulativePointsEarned", 0);
         points = sharePrefs.getFloat("points", 0.0f);
         for (String rewardName : sharePrefs.getStringSet("rewards", new HashSet<String>())) {
             Reward newReward = new Reward(context, rewardName, 0);
