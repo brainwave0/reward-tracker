@@ -3,7 +3,9 @@ package com.a0gmail.iancampos.rewardtracker;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-public class Reward {
+import java.io.Serializable;
+
+public class Reward implements Serializable {
     public float dailyLimit = 0.0f;
     public String name = "undefined";
     Context context;

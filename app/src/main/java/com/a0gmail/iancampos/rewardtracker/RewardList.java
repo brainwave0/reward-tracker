@@ -1,19 +1,16 @@
 package com.a0gmail.iancampos.rewardtracker;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 
-class RewardList {
+class RewardList implements Serializable {
     private HashMap<String, Reward> rewardsMap = new HashMap<>();
     ArrayList<Reward> rewardsList = new ArrayList<>();
     private float cumulativePointsEarned = 0.0f;
@@ -58,39 +55,5 @@ class RewardList {
     private float avgPointsPerDay() {
         int daysSinceStart = Days.daysBetween(startDateTime, DateTime.now()).getDays();
         return cumulativePointsEarned / daysSinceStart;
-    }
-
-    public void save() {
-        SharedPreferences sharePrefs = context.getSharedPreferences("rewardListSaveData", Context.MODE_PRIVATE);
-        SharedPreferences.Editor sharePrefEdit = sharePrefs.edit();
-
-        sharePrefEdit.putFloat("cumulativePointsEarned", cumulativePointsEarned);
-        sharePrefEdit.putFloat("points", points);
-
-        String[] setValues = new String[rewardsList.size()];
-        for (int i = 0; i < rewardsList.size(); i++) {
-            setValues[i] = rewardsList.get(i).name;
-        }
-        Set<String> stringSet = new HashSet<>(Arrays.asList(setValues));
-        sharePrefEdit.putStringSet("rewards", stringSet);
-
-        for (Reward reward : rewardsList) {
-            reward.save();
-        }
-
-        sharePrefEdit.apply();
-    }
-
-    public void load() {
-        SharedPreferences sharePrefs = context.getSharedPreferences("rewardListSaveData", Context.MODE_PRIVATE);
-
-        cumulativePointsEarned = sharePrefs.getInt("cumulativePointsEarned", 0);
-        points = sharePrefs.getFloat("points", 0.0f);
-        for (String rewardName : sharePrefs.getStringSet("rewards", new HashSet<String>())) {
-            Reward newReward = new Reward(context, rewardName, 0);
-            newReward.load();
-            rewardsList.add(newReward);
-            rewardsMap.put(newReward.name, newReward);
-        }
     }
 }

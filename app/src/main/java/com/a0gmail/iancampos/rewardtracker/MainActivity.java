@@ -1,5 +1,6 @@
 package com.a0gmail.iancampos.rewardtracker;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -11,8 +12,15 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
-    private RewardList rewardList = new RewardList(this);
+    private RewardList rewardList;
     private TextView priceText;
     private TextView costText;
     private TextView pointsText;
@@ -21,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private EditText dailyLimitInput;
     private Spinner rewardSpinner;
     private ArrayAdapter<Reward> rewardListAdapter;
+    String saveFileName = "savedata";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +44,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         dailyLimitInput = (EditText) findViewById(R.id.dailyLimitField);
         rewardSpinner = (Spinner) findViewById(R.id.rewardSpinner);
 
-        rewardList.load();
+        try {
+            FileInputStream fis = openFileInput(saveFileName);
+            ObjectInputStream is = new ObjectInputStream(fis);
+            rewardList = (RewardList) is.readObject();
+            is.close();
+            fis.close();
+        } catch (FileNotFoundException e) {
+            rewardList = new RewardList(this);
+        } catch (ClassNotFoundException e) {
+        } catch (IOException e) {
+        }
 
         spendingAmountInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -92,7 +111,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void onPause() {
         super.onPause();
-        rewardList.save();
+
+        FileOutputStream fos = null;
+        try {
+            fos = openFileOutput(saveFileName, Context.MODE_PRIVATE);
+            ObjectOutputStream os = new ObjectOutputStream(fos);
+            os.writeObject(this);
+            os.close();
+            fos.close();
+        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
+        }
     }
 
     public void resetButtonClicked(View view) {
@@ -130,12 +159,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         try {
             costText.setText("for " + Float.parseFloat(spendingAmountInput.getText().toString()) * rewardList.price(rewardSpinner.getSelectedItem().toString()) + " points.");
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             costText.setText("for 0 points.");
-        }
-        catch (NumberFormatException e) {
-
-        }
+        } catch (NumberFormatException e) {}
     }
 }
