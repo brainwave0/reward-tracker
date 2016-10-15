@@ -4,11 +4,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class Reward {
-    public float dailyLimit = 0.0f;
+    public double dailyLimit = 0.0;
     public String name = "undefined";
     Context context;
 
-    public Reward(Context newContext, String newName, float newDailyLimit) {
+    public Reward(Context newContext, String newName, double newDailyLimit) {
         name = newName;
         dailyLimit = newDailyLimit;
         context = newContext;
@@ -22,13 +22,17 @@ public class Reward {
         SharedPreferences sharePrefs = context.getSharedPreferences(name + "RewardSaveData", Context.MODE_PRIVATE);
         SharedPreferences.Editor sharePrefEdit = sharePrefs.edit();
 
-        sharePrefEdit.putFloat("dailyLimit", dailyLimit);
+        sharePrefEdit.putLong("dailyLimit", Double.doubleToLongBits(dailyLimit));
 
         sharePrefEdit.apply();
     }
 
     public void load() {
         SharedPreferences sharePrefs = context.getSharedPreferences(name + "RewardSaveData", Context.MODE_PRIVATE);
-        dailyLimit = sharePrefs.getFloat("dailyLimit", 0.0f);
+        dailyLimit = Double.longBitsToDouble(sharePrefs.getLong("dailyLimit", 0));
+    }
+
+    public double getDailyLimit() {
+        return dailyLimit;
     }
 }
