@@ -12,7 +12,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
-    private RewardList rewardList = new RewardList(this);
+    public RewardList rewardList = new RewardList(this);
     private TextView priceText;
     private TextView costText;
     private TextView pointsText;
@@ -72,12 +72,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     public void spendButtonClicked(View view) {
-        rewardList.spend(Float.parseFloat(spendingAmountInput.getText().toString()), rewardSpinner.getSelectedItem().toString());
+        rewardList.spend(Double.parseDouble(spendingAmountInput.getText().toString()), rewardSpinner.getSelectedItem().toString());
         update();
     }
 
     public void newRewardButtonClicked(View view) {
-        rewardList.addReward(rewardNameInput.getText().toString(), Float.parseFloat(dailyLimitInput.getText().toString()));
+        rewardList.addReward(rewardNameInput.getText().toString(), Double.parseDouble(dailyLimitInput.getText().toString()));
         rewardNameInput.setText("");
         dailyLimitInput.setText("0");
         rewardListAdapter.notifyDataSetChanged();
@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         rewardListAdapter.notifyDataSetChanged();
 
         try {
-            costText.setText("for " + Float.parseFloat(spendingAmountInput.getText().toString()) * rewardList.price(rewardSpinner.getSelectedItem().toString()) + " points.");
+            costText.setText("for " + Double.parseDouble(spendingAmountInput.getText().toString()) * rewardList.price(rewardSpinner.getSelectedItem().toString()) + " points.");
         }
         catch (NullPointerException e) {
             costText.setText("for 0 points.");

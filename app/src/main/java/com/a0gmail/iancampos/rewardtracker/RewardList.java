@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
 import org.joda.time.Days;
 
 import java.util.ArrayList;
@@ -12,12 +13,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.joda.time.Seconds.secondsBetween;
+
 
 class RewardList {
     private HashMap<String, Reward> rewardsMap = new HashMap<>();
     ArrayList<Reward> rewardsList = new ArrayList<>();
-    private float cumulativePointsEarned = 0.0f;
-    float points = 0.0f;
+    private double cumulativePointsEarned = 0.0;
+    double points = 0.0;
     private Context context;
     private DateTime startDateTime;
 
@@ -26,20 +29,28 @@ class RewardList {
         startDateTime = DateTime.now();
     }
 
-    public float price(String rewardName) {
+    public double price(String rewardName) {
         try {
-            return avgPointsPerDay() / rewardsList.size() / rewardsMap.get(rewardName).dailyLimit;
+            return avgPointsPerDay() / numRewards() / getReward(rewardName).getDailyLimit();
         }
         catch (NullPointerException e) {
             return 0;
         }
     }
 
-    public void spend(float amt, String rewardName) {
+    public Reward getReward(String rewardName) {
+        return rewardsMap.get(rewardName);
+    }
+
+    public int numRewards() {
+        return rewardsList.size();
+    }
+
+    public void spend(double amt, String rewardName) {
         points -= price(rewardName) * amt;
     }
 
-    public void addReward(String name, float dailyLimit) {
+    public void addReward(String name, double dailyLimit) {
         Reward newReward = new Reward(context, name, dailyLimit);
         rewardsMap.put(newReward.name, newReward);
         rewardsList.add(newReward);
@@ -55,8 +66,11 @@ class RewardList {
         cumulativePointsEarned++;
     }
 
-    private float avgPointsPerDay() {
-        int daysSinceStart = Days.daysBetween(startDateTime, DateTime.now()).getDays();
+    public double avgPointsPerDay() {
+        double daysSinceStart = secondsBetween(startDateTime, DateTime.now()).getSeconds() / 24 / Math.pow(60, 2);
+        if (daysSinceStart == 0) {
+            return 0;
+        }
         return cumulativePointsEarned / daysSinceStart;
     }
 
@@ -64,8 +78,8 @@ class RewardList {
         SharedPreferences sharePrefs = context.getSharedPreferences("rewardListSaveData", Context.MODE_PRIVATE);
         SharedPreferences.Editor sharePrefEdit = sharePrefs.edit();
 
-        sharePrefEdit.putFloat("cumulativePointsEarned", cumulativePointsEarned);
-        sharePrefEdit.putFloat("points", points);
+        sharePrefEdit.putLong("cumulativePointsEarned", Double.doubleToLongBits(cumulativePointsEarned));
+        sharePrefEdit.putLong("points", Double.doubleToLongBits(points));
 
         String[] setValues = new String[rewardsList.size()];
         for (int i = 0; i < rewardsList.size(); i++) {
@@ -84,13 +98,17 @@ class RewardList {
     public void load() {
         SharedPreferences sharePrefs = context.getSharedPreferences("rewardListSaveData", Context.MODE_PRIVATE);
 
-        cumulativePointsEarned = sharePrefs.getInt("cumulativePointsEarned", 0);
-        points = sharePrefs.getFloat("points", 0.0f);
+        cumulativePointsEarned = Double.longBitsToDouble(sharePrefs.getLong("cumulativePointsEarned", 0));
+        points = Double.longBitsToDouble(sharePrefs.getLong("points", 0));
         for (String rewardName : sharePrefs.getStringSet("rewards", new HashSet<String>())) {
             Reward newReward = new Reward(context, rewardName, 0);
             newReward.load();
             rewardsList.add(newReward);
             rewardsMap.put(newReward.name, newReward);
         }
+    }
+
+    public void waitOneDay() {
+        DateTimeUtils.setCurrentMillisFixed(DateTimeUtils.currentTimeMillis() + 86400000);
     }
 }
