@@ -80,6 +80,7 @@ class RewardList {
 
         sharePrefEdit.putLong("cumulativePointsEarned", Double.doubleToLongBits(cumulativePointsEarned));
         sharePrefEdit.putLong("points", Double.doubleToLongBits(points));
+        sharePrefEdit.putLong("startDateTime", startDateTime.getMillis());
 
         String[] setValues = new String[rewardsList.size()];
         for (int i = 0; i < rewardsList.size(); i++) {
@@ -100,6 +101,7 @@ class RewardList {
 
         cumulativePointsEarned = Double.longBitsToDouble(sharePrefs.getLong("cumulativePointsEarned", 0));
         points = Double.longBitsToDouble(sharePrefs.getLong("points", 0));
+        startDateTime = new DateTime(sharePrefs.getLong("startDateTime", DateTime.now().getMillis()));
         for (String rewardName : sharePrefs.getStringSet("rewards", new HashSet<String>())) {
             Reward newReward = new Reward(context, rewardName, 0);
             newReward.load();

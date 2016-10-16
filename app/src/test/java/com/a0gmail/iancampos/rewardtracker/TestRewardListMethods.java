@@ -29,17 +29,17 @@ public class TestRewardListMethods {
     public void price() throws Exception {
         doReturn(testReward).when(rewardListSpy).getReward("test");
 
-        doReturn(1).when(rewardListSpy).avgPointsPerDay();
+        doReturn(1d).when(rewardListSpy).avgPointsPerDay();
         doReturn(2).when(rewardListSpy).numRewards();
         when(testReward.getDailyLimit()).thenReturn(1d);
         Assert.assertEquals("fail", 0.5, rewardListSpy.price("test"), 0.0001);
 
-        doReturn(0).when(rewardListSpy).avgPointsPerDay();
+        doReturn(0d).when(rewardListSpy).avgPointsPerDay();
         doReturn(1).when(rewardListSpy).numRewards();
         when(testReward.getDailyLimit()).thenReturn(1d);
         Assert.assertEquals("fail", 0, rewardListSpy.price("test"), 0.0001);
 
-        doReturn(0.5).when(rewardListSpy).avgPointsPerDay();
+        doReturn(0.5d).when(rewardListSpy).avgPointsPerDay();
         doReturn(2).when(rewardListSpy).numRewards();
         when(testReward.getDailyLimit()).thenReturn(1.5);
         Assert.assertEquals("fail", 0.1667, rewardListSpy.price("test"), 0.0001);
@@ -47,7 +47,7 @@ public class TestRewardListMethods {
 
     @Test
     public void spend() throws Exception {
-        doReturn(1).when(rewardListSpy).price("test");
+        doReturn(1d).when(rewardListSpy).price("test");
         rewardListSpy.spend(1.5, "test");
         assertEquals("fail", -1.5, rewardListSpy.points, 0);
 
