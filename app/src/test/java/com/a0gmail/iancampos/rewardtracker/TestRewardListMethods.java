@@ -32,7 +32,7 @@ public class TestRewardListMethods {
         doReturn(1d).when(rewardListSpy).avgPointsPerDay();
         doReturn(2).when(rewardListSpy).numRewards();
         when(testReward.getDailyLimit()).thenReturn(1d);
-        Assert.assertEquals("fail", 0.5, rewardListSpy.price("test"), 0.0001);
+        Assert.assertEquals("fail", 0.75, rewardListSpy.price("test"), 0.0001);
 
         doReturn(0d).when(rewardListSpy).avgPointsPerDay();
         doReturn(1).when(rewardListSpy).numRewards();
@@ -42,7 +42,7 @@ public class TestRewardListMethods {
         doReturn(0.5d).when(rewardListSpy).avgPointsPerDay();
         doReturn(2).when(rewardListSpy).numRewards();
         when(testReward.getDailyLimit()).thenReturn(1.5);
-        Assert.assertEquals("fail", 0.1667, rewardListSpy.price("test"), 0.0001);
+        Assert.assertEquals("fail", 0.25005, rewardListSpy.price("test"), 0.0001);
     }
 
     @Test

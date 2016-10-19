@@ -23,6 +23,7 @@ class RewardList {
     double points = 0.0;
     private Context context;
     private DateTime startDateTime;
+    double difficulty = 1.5;
 
     public RewardList(Context newContext) {
         context = newContext;
@@ -31,7 +32,7 @@ class RewardList {
 
     public double price(String rewardName) {
         try {
-            return avgPointsPerDay() / numRewards() / getReward(rewardName).getDailyLimit();
+            return avgPointsPerDay() / numRewards() / getReward(rewardName).getDailyLimit() * difficulty;
         }
         catch (NullPointerException e) {
             return 0;
